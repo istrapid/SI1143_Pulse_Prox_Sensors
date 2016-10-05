@@ -1,53 +1,64 @@
-#define SEL 2  // When the SEL pin is held low, the data will be
-               //  routed to the PC via the USB-serial bridge.
-               //  That port is also the port used for programming
-               //  by the Arduino IDE. When in bootloading mode, a
-               //  pull-down resistor on the SmartBasic causes it
-               //  to remain in programming mode.
+/*
+ * smartBasicDemo.ino
+ * 
+ * The following script was designed to demo the capabilities of the Smart Basic FTDI breakout built by SparkFun
+ * The script has been designed to be integrated "as-is" to the control algorithms used in PD3D's smart devices
+ * 
+ * Fluvio L Lobo Fenoglietto 10/05/2016
+ */
 
-#define ARDUINO_IDE   LOW  // Constants to make our routing change
-#define AUX_TERMINAL  HIGH //  more obvious. When the SEL pin is 
-                           //  LOW, data is routed to the
-                           //  programming port.
+#include "protocol.h"
+#include "states.h"
+
+byte      inByte = 0x00;
 
 void setup()
 {
-  Serial.begin(115200);    // Set up the hardware serial port.
-
-  pinMode(SEL, OUTPUT);    // Make the select line an output...
-  digitalWrite(SEL, ARDUINO_IDE); // ...and connect the board to
-                           //  the Arduino IDE's terminal.  
+  BTooth.begin( SPEED );
+  pinMode( BLUESWITCH, OUTPUT );                // Define the switch digital pin as an output
+  digitalWrite( BLUESWITCH, HIGH );             // Automatically set the switch pin HIGH to communicate through the host after disconnecting the USB
+  readyState = READY;
 }
 
 void loop()
 {
-  // The loop just says "Hello" to the two terminals, over and
-  //  over, forever. Note the use of the "flush()" function. If
-  //  omitted, the Arduino will re-route the serial data before
-  //  the transmission has been completed; flush() causes the
-  //  Arduino to block until the serial data output buffer is
-  //  empty. Failure to use flush() will result in data being
-  //  sent to the wrong device, or to multiplexer changes during
-  //  transmission which may cause framing errors or data
-  //  corruption. *Always put in a flush() before you change
-  //  destination devices or disable the output.*
-  Serial.flush();
-  digitalWrite(SEL, ARDUINO_IDE);
-  Serial.println("Hello, Arduino IDE!");
+  // if we get a valid byte, read analog ins:
+  if ( BTooth.available() > 0 )
+  {
+    inByte = BTooth.read();                     // get incoming byte
 
-  // Swap to the non-Arduino terminal and say hello.
-  Serial.flush();
-  digitalWrite(SEL, AUX_TERMINAL);
-  Serial.println("Hello, auxilliary terminal!");
+    switch ( inByte )
+    {
+      //
+      //  *** Perform a systems check via remote trigger
+      //
+      case CHK :
+      break;
 
-  Serial.flush();
+      //
+      //  *** Check system status
+      //
+      case ENQ :
+        if ( readyState == READY )
+        {
+          BTooth.write( ACK );
+        }
+        else
+        {
+          BTooth.write( NAK );
+        }
+      break;
+      case EOT :
+      case ACK :
+      case NAK :
+      case CAN :
+      break;
+      default :
+      break;
+    }
 
-  delay(500); // This is a rate-limiter only. The temptation to use
-              //  delay() instead of flush() is strong, but fight it.
-              //  If you use delay, you will *certainly* make a change
-              //  to the code which makes the original delay time too
-              //  short for the new serial data stream, resulting in
-              //  data corruption. flush() will *always* be the right
-              //  length.
+  }
+  
+  inByte = 0x00;
 }
 
