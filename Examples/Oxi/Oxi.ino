@@ -11,7 +11,50 @@
  * Code in the public domain but credit for the software is nice :)
  */
  
- #include <SI114.h>
+#include <SI114.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+// If using software SPI (the default case):
+#define OLED_MOSI   9
+#define OLED_CLK   10
+#define OLED_DC    11
+#define OLED_CS    12
+#define OLED_RESET 13
+Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
+
+#define NUMFLAKES 10
+#define XPOS 0
+#define YPOS 1
+#define DELTAY 2
+
+#define LOGO16_GLCD_HEIGHT 16 
+#define LOGO16_GLCD_WIDTH  16 
+static const unsigned char PROGMEM logo16_glcd_bmp[] =
+{ B00000000, B11000000,
+  B00000001, B11000000,
+  B00000001, B11000000,
+  B00000011, B11100000,
+  B11110011, B11100000,
+  B11111110, B11111000,
+  B01111110, B11111111,
+  B00110011, B10011111,
+  B00011111, B11111100,
+  B00001101, B01110000,
+  B00011011, B10100000,
+  B00111111, B11100000,
+  B00111111, B11110000,
+  B01111100, B11110000,
+  B01110000, B01110000,
+  B00000000, B00110000 };
+
+#if (SSD1306_LCDHEIGHT != 64)
+#error("Height incorrect, please fix Adafruit_SSD1306.h!");
+#endif
+
+ static float IR_baseline, red_baseline;
  
  const int portForSI114 = 0;  // this is the port to use for Arduino native I2C pins
                               // e.g. A4, A5 on an UNO
@@ -40,7 +83,7 @@ const int SAMPLES_TO_AVERAGE = 5;             // samples for smoothing 1 to 10 s
                                       // for sending data to HeartbeatGraph in Processing
 // #define POWERLINE_SAMPLING         // samples on an integral of a power line period [eg 1/60 sec]
 // #define AMBIENT_LIGHT_SAMPLING     // also samples ambient slight (slightly slower)
- // #define PRINT_LED_VALS             // print LED raw values
+  #define PRINT_LED_VALS             // print LED raw values
  #define GET_PULSE_READING            // prints HB, signal size, PSO2 ratio
 
 
@@ -57,9 +100,19 @@ PortI2C myBus (portForSI114);
 PulsePlug pulse (myBus); 
 
 void setup () {
-    Serial.begin(57600);
-    Serial.println("\n Pulse_demo ");
+ 
+    Serial.begin(9600);
 
+  // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
+  display.begin(SSD1306_SWITCHCAPVCC);
+  
+    Serial.begin(57600);
+    
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3D); // initialize with the I2C addr 0x3C (for the 128x32)
+    display.setTextSize(2); // Set the text size
+    display.setTextColor(WHITE); // Set the text color
+    
+    Serial.println("\n Pulse_demo ");
     if (pulse.isPresent()) {
         Serial.print("SI114x Pulse Sensor found on Port ");
         Serial.println(portForSI114);
@@ -70,13 +123,17 @@ void setup () {
     }
     Serial.begin(57600);
     digitalWrite(3, HIGH);
-
+    
     initPulseSensor();
+    
+    
 }
 
-
 void loop(){
-    readPulseSensor();
+  BPM = readPulseSensor(); 
+  display.println();
+  display.print("PSO2");
+  display.print(((float)red_baseline / (float)(IR_baseline/2)), 3);
 }
 
 
@@ -161,7 +218,7 @@ void initPulseSensor(){
     Serial.print("end init");
 }
 
-void readPulseSensor(){
+static int readPulseSensor(){
 
     static int foundNewFinger, red_signalSize, red_smoothValley;
     static long red_valley, red_Peak, red_smoothRedPeak, red_smoothRedValley, 
@@ -189,7 +246,6 @@ void readPulseSensor(){
      #else     
      while (i < SAMPLES_TO_AVERAGE){      
      #endif
-     
      
      #ifdef AMBIENT_LIGHT_SAMPLING   
      pulse.fetchData();
@@ -254,7 +310,7 @@ void readPulseSensor(){
 
     if ( foundNewFinger < 20){
         IR_baseline = total - 200;   // take a guess at the baseline to prime smooth filter
-   Serial.println("found new finger");     
+        Serial.print("found new finger: ");  
     }
     
     else if(total > 20000L) {    // main running function
@@ -316,9 +372,7 @@ void readPulseSensor(){
         hysterisis = constrain((IR_signalSize / 15), 35, 120) ;  // you might want to divide by smaller number
                                                                 // if you start getting "double bumps"
             
-        // Serial.print(" T  ");
-        // Serial.print(IR_signalSize); 
-
+        
         if  (IR_HFoutput2 < shiftedOutput){
             // found a beat - pulses are valleys
             lastBinOut = binOut;
@@ -362,11 +416,19 @@ void readPulseSensor(){
             Serial.print("\t IR ");
             Serial.print(IR_signalSize);
             Serial.print("\t PSO2 ");         
-            Serial.println(((float)red_baseline / (float)(IR_baseline/2)), 3);                     
+            Serial.println(((float)red_baseline / (float)(IR_baseline/2)), 3);   
+
+               display.clearDisplay();
+               display.setCursor(0,0);
+               display.print(BPM,1);
+               display.println(" bpm");
+               display.display();
+               
         }
 
     }
  #endif
+ return BPM;
 }
 
 
