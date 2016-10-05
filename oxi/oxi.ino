@@ -196,7 +196,8 @@ void readPulseSensor(){
     static float LFoutput;
     static float hysterisis;
 
-    unsigned long total=0, start;
+    unsigned long total=0;
+    unsigned long start;
     int i=0;
     int IR_signalSize;
     red = 0;
@@ -205,8 +206,6 @@ void readPulseSensor(){
     total = 0;
     start = millis();
 
-         
-    
      #ifdef POWERLINE_SAMPLING
      
      while (millis() - start < 16){   // 60 hz - or use 33 for two cycles
