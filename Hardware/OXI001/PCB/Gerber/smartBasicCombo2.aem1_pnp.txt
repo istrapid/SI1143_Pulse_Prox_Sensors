@@ -1,0 +1,34 @@
+*Pick And Place List
+*Company=
+*Author=
+*eMail=
+*
+*Project=smartBasicCombo2.aem1
+*Date=16:04:30
+*CreatedBy=Fritzing 0.9.3b.04.19.5c895d327c44a3114e5fcc9d8260daf0cbb52806
+*
+*
+*Coordinates in mm, always center of component
+*Origin 0/0=Lower left corner of PCB
+*Rotation in degree (0-360, math. pos.)
+*
+*No;Value;Package;X;Y;Rotation;Side;Name
+1;;;66.3812;-52.1058;180;Bottom;BLU
+2;;;13.3853;-51.4708;0;Bottom;BAT CHG
+3;;;47.9546;-33.0569;0;Bottom;Via4
+4;;;42.9296;-15.2966;0;Bottom;Via7
+5;;;40.3461;-43.2158;0;Bottom;Via2
+6;;;40.3461;-48.2958;0;Bottom;Via1
+7;;;37.8062;-38.1358;0;Bottom;Via3
+8;;THT;54.0415;-29.2458;0;Bottom;J5
+9;;;20.0262;-29.2458;90;Bottom;PRO MINI
+10;;;22.5705;-17.7844;0;Bottom;Via9
+11;;;32.7262;-7.65582;0;Bottom;Via5
+12;;;72.4426;-8.21106;0;Top;TXT3
+13;;;80.6968;-12.6511;0;Top;TXT4
+14;;THT;74.6362;-38.1358;-90;Bottom;J3
+15;;;50.4748;-15.2966;0;Bottom;Via6
+16;;THT;59.3962;-38.1358;90;Bottom;J2
+17;;THT;31.4562;-12.7358;-90;Bottom;Oxi header
+18;;THT;13.6762;-12.7358;-90;Bottom;OLED header
+19;;;14.9881;-39.1484;0;Bottom;Via10
