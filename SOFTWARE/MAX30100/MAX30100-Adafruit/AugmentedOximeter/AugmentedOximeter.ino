@@ -8,6 +8,7 @@ Adafruit_MAX30100 pulse = Adafruit_MAX30100();
 #define SECONDS_OF_SAMPLES  (5)
 #define SAMPLE_RATE         (50)
 #define MAX_SAMPLES         (SECONDS_OF_SAMPLES * SAMPLE_RATE)
+#define SERIAL_BUFFER_SIZE  (64)
 
 uint32_t fifo_buffer[16];
 uint32_t databufferptr = 0;

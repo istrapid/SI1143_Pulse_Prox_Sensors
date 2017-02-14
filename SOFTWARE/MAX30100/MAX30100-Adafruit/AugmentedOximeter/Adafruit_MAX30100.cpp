@@ -24,7 +24,7 @@
 #endif
 
 #include <Wire.h>
-#include <Adafruit_Max30100.h>
+#include "Adafruit_Max30100.h"
 
 
 /**************************************************************************/
