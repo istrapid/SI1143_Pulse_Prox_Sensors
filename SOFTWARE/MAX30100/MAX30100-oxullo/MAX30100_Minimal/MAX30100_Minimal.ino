@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <Wire.h>
 #include "MAX30100_PulseOximeter.h"
 
-#define REPORTING_PERIOD_MS     1500
+#define REPORTING_PERIOD_MS     2500
 
 // PulseOximeter is the higher level interface to the sensor
 // it offers:

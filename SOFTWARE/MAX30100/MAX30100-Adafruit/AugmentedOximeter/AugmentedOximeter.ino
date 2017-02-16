@@ -4,27 +4,34 @@
 Adafruit_MAX30100 pulse = Adafruit_MAX30100();
 #define MAX30100_IRQPIN 12
 
-// make sure this is right!
-#define SECONDS_OF_SAMPLES  (5)
-#define SAMPLE_RATE         (50)
-#define MAX_SAMPLES         (SECONDS_OF_SAMPLES * SAMPLE_RATE)
-#define SERIAL_BUFFER_SIZE  (64)
+// Data Manupulation
+#define SECONDS_OF_SAMPLES  (10)                                      // Seconds of data, recall that there is one heart-rate peak per second
+#define SAMPLE_RATE         (50)                                      // Samples per second of data
+#define MAX_SAMPLES         (SECONDS_OF_SAMPLES * SAMPLE_RATE)        // Number of samples collected
+#define MEM_REQ             (SECONDS_OF_SAMPLES * SAMPLE_RATE * 4)    // Amount of memmory required based on on sample rate and sampling time chosen, each data point takes 2-bytes
+#define SERIAL_BUFFER_SIZE  (256)                                     // For the Teensy 3.2
 
 uint32_t fifo_buffer[16];
 uint32_t databufferptr = 0;
 uint16_t databuffer_ir[MAX_SAMPLES];
 uint16_t databuffer_red[MAX_SAMPLES];
 
+// Setup
 void setup() {
   while (!Serial);
   delay(100);
   Serial.begin(115200);
-  Serial.println("MAX30100 test!");
-
+  
+  // Micro-controller Test
+  Serial.print("Memory Requirement: "); Serial.println(MEM_REQ);
+  
   Serial.print("I2C buffer length: "); Serial.println(SERIAL_BUFFER_SIZE);
   if (SERIAL_BUFFER_SIZE < 64) {
     Serial.println("Buffer must be 64 bytes long at least!");
   }
+
+  // MAX30100 Test
+  Serial.println("MAX30100 test!");
   if (!pulse.begin()) {
     Serial.println("Failed to find MAX30100");
     while (1);
@@ -63,8 +70,8 @@ void setup() {
   Serial.print("LED pulse width = "); Serial.print(pulsewidth); Serial.println(" uS");
 
   /***************** Set & check LED current */
-  pulse.setRedLEDcurrent(MAX30100_LEDCURRENT_30_6MA);
-  pulse.setIRLEDcurrent(MAX30100_LEDCURRENT_11MA);
+  pulse.setRedLEDcurrent(MAX30100_LEDCURRENT_50MA);
+  pulse.setIRLEDcurrent(MAX30100_LEDCURRENT_30_6MA);
   max30100_led_current_t red = pulse.getRedLEDcurrent();
   max30100_led_current_t ir = pulse.getIRLEDcurrent();
 
@@ -111,10 +118,10 @@ void setup() {
 
   pulse.startRead();
 
-}
+} // End of setup()
 
 
-
+// Loop
 void loop() {
   databufferptr = 0;
   while (databufferptr < MAX_SAMPLES) {
@@ -150,4 +157,5 @@ void loop() {
     
   }
   delay(1000);
-}
+} // End of loop()
+
